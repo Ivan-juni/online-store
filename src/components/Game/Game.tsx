@@ -1,11 +1,16 @@
 import React from 'react';
-import game_image from '../../assets/images/forza.png';
 import styles from './game.module.css';
+import game_image from '../../assets/images/forza.png';
+import info_icon from '../../assets/images/info-icon.svg';
 
-const Game = () => {
+const Game: React.FC = () => {
     return (
         <div className={styles.game}>
-            <img className={styles.game__thumb} src={game_image} alt="forza" />
+            <div className={styles.game__image}>
+                <img className={styles.game__thumb} src={game_image} alt="forza" />
+                <div className={styles.info}><img src={info_icon} alt="i" /></div>
+            </div>
+            <hr className={styles.v_line}/>
             <div className={styles.game__panel}>
                 <h3 className={styles.panel__caption}>Forza Horizon 4</h3>
                 <div className={styles.panel__janres}>

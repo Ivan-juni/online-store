@@ -1,0 +1,33 @@
+.wrapper{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 400px;
+    color: white;
+    background-color: rgb(38, 38, 38);
+    border-radius: 20px;
+    padding: 20px;
+}
+.cart__caption, .cart__price{
+    font-size: 18px;
+}
+.wrapper table{
+    text-align: center;
+    width: 100%;
+    border-collapse: collapse;
+}
+table th:first-child{
+    float: left;
+}
+.h_line{
+    width: 100%;
+}
+.cart__summary{
+    margin-right: 5px;
+}
+.cart__sum td:first-child{
+    float: left;
+}
+.cart__sum td:last-child{
+    float: right;
+}
