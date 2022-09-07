@@ -3,9 +3,10 @@ import styles from './footer.module.css';
 
 const Footer: React.FC = () => {
     return (
-        <div className={styles.wrapper}>
-            
-        </div>
+        <footer className={styles.wrapper}>
+            <h1>Course work "Game store"</h1>
+            <h2>Ivan Ivaniuk</h2>
+        </footer>
     );
 };
 

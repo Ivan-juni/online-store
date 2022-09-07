@@ -1,4 +1,4 @@
-.App {
+.wrapper {
   display: grid;
   grid-template-rows: 1fr 10fr auto;
   grid-template-areas: 

@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from './games.module.css';
+import styles from './homePage.module.css';
 
-const Games: React.FC = () => {
+const HomePage: React.FC = () => {
     return (
         <div className={styles.wrapper}>
             
@@ -9,4 +9,4 @@ const Games: React.FC = () => {
     );
 };
 
-export default Games;
+export default HomePage;
