@@ -1,0 +1,7 @@
+.wrapper{
+    grid-area: f;
+    height: 50px;
+    width: 100%;
+    /* ! todo: delete this in time */
+    border: 2px solid blue;
+}
