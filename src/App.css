@@ -5,10 +5,9 @@
   "h"
   "b"
   "f";
-  max-width: 1400px;
+  max-width: 1440px;
   height: 100%;
   margin: 0 auto;
-  /* ! todo: delete this in time */
-  border: 2px solid red; 
+  background-color: rgb(61, 61, 61);
 }
 

@@ -5,8 +5,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 45px;
+    padding-right: 45px;
     background: rgb(39, 32, 157);
     background: linear-gradient(90deg, rgba(39, 32, 157, 1) 0%, rgba(96, 7, 172, 1) 25%, rgba(102, 30, 164, 1) 68%, rgba(128, 9, 173, 1) 100%);
     color: white;
@@ -34,6 +34,9 @@
 .basket__quantity{
     font-weight: 700;
     float: right;
-    margin-right: 6px;
+    margin-right: 5.5px;
     margin-top: -1px;
+}
+.sum__summary{
+    font-weight: 600;
 }
