@@ -1,0 +1,13 @@
+.wrapper{
+    grid-area: b;
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.games{
+    margin-top: 50px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 300px 300px 300px 300px;
+    grid-gap: 50px;
+}

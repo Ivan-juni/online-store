@@ -1,0 +1,19 @@
+.wrapper{
+    grid-area: f;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    height: 100px;
+    width: 100%;
+    background: rgb(39, 32, 157);
+    background: linear-gradient(90deg, rgba(39, 32, 157, 1) 0%, rgba(96, 7, 172, 1) 25%, rgba(102, 30, 164, 1) 68%, rgba(128, 9, 173, 1) 100%);
+    text-transform: uppercase;
+    color: white;
+}
+footer h1{
+    font-size: 28px;
+}
+footer h2{
+    font-size: 20px;
+}

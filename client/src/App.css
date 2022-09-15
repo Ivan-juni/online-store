@@ -1,0 +1,13 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: 1fr 10fr auto;
+  grid-template-areas: 
+  "h"
+  "b"
+  "f";
+  max-width: 1440px;
+  height: 100%;
+  margin: 0 auto;
+  background-color: rgb(61, 61, 61);
+}
+

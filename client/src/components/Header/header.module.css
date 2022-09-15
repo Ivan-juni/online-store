@@ -1,0 +1,42 @@
+.wrapper{
+    grid-area: h;
+    height: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 45px;
+    padding-right: 45px;
+    background: rgb(39, 32, 157);
+    background: linear-gradient(90deg, rgba(39, 32, 157, 1) 0%, rgba(96, 7, 172, 1) 25%, rgba(102, 30, 164, 1) 68%, rgba(128, 9, 173, 1) 100%);
+    color: white;
+}
+.caption{
+    font-size: 32px;
+}
+.basket{
+    display: flex;
+    align-items: center;
+    grid-gap: 20px;
+    font-weight: 500;
+}
+.basket__sum{
+    display: flex;
+    grid-gap: 10px;
+}
+.basket__thumb{
+    width: 44px;
+    height: 43px;
+    background-image: url(../../assets/images/cart.svg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.basket__quantity{
+    font-weight: 700;
+    float: right;
+    margin-right: 5.5px;
+    margin-top: -1px;
+}
+.sum__summary{
+    font-weight: 600;
+}
