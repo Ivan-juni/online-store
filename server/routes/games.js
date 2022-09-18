@@ -1,26 +1,49 @@
 const express = require("express");
+const multer = require("multer");
 const router = express.Router();
 const path = require("path");
-const { getGames } = require("../controllers/games");
+const {
+  getGames,
+  getGameInfo,
+  addGame,
+  deleteGame,
+} = require("../controllers/games");
 
-// @route GET /api/games
-// @des Get all games
-router.get("/", getGames);
+// Where store download files
+const storage = multer.diskStorage({
+  destination: "./assets/",
+  filename: (req, file, callback) => {
+    callback(
+      null,
+      file.filename + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
 
-// @route GET /api/games/:id
-// @des Get one game by id
-router.get("/:id", (req, res) => res.send("Get game by id"));
+const upload = multer({ storage });
 
 // @route GET /api/games/:id/gameInfo
 // @des Get game info
-router.get("/gameInfo/:gameId", (req, res) => res.send("Get game info by id"));
+router.get("/:id/gameInfo", getGameInfo);
 
-// @route GET /api/games/category/:name
-// @des Get games by Category
-router.get("/category/:name", (req, res) => res.send("Get games by category"));
+// @route GET /api/games
+// @route GET /api/games?id=
+// @route GET /api/games?name=
+// @route GET /api/games?categoryName=
+// @des Get games
+router.get("", getGames);
 
+// !Admin panel
 // @route POST /api/games
 // @des Add a game
-router.post("/", (req, res) => res.send("Create (add) game"));
+router.post("/", upload.single("image"), addGame);
+
+// @route DELETE /api/games/:id
+// @des Delete a game
+router.delete("/:id", deleteGame);
+
+// @route PUT /api/games/:id
+// @des Set available/unavailable
+router.put("/:id", (req, res) => res.send("Availibilyty of Game was changed"));
 
 module.exports = router;

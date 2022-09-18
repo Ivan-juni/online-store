@@ -1,4 +1,3 @@
-const { ObjectId } = require("bson");
 const mongoose = require("mongoose");
 
 const gameSchema = mongoose.Schema({
@@ -14,8 +13,23 @@ const gameSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  categoryId: {
-    type: ObjectId,
+  categoryName: {
+    type: [String],
+    required: true,
+  },
+  gameInfo: {
+    type: {
+      title: String,
+      description: String,
+    },
+    required: false,
+  },
+  available: {
+    type: Boolean,
+    required: true,
+  },
+  accessKey: {
+    type: String,
     required: true,
   },
 });

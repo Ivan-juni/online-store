@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 // For parsing apllication/json
 app.use(express.json());
 // For parsing application/x-www-form-urlencoded
-app.use(express.urlencoded({ esxtended: true }));
+app.use(express.urlencoded({ extended: true }));
 // Path to images folder
 app.use("/static", express.static(__dirname + "/assets"));
 // Redirect to folder
