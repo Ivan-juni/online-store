@@ -11,3 +11,24 @@
     grid-template-columns: 300px 300px 300px 300px;
     grid-gap: 50px;
 }
+.cart {
+    position: absolute;
+    z-index: 999;
+    float: right;
+    margin-left: 837px;
+    margin-top: -20px;
+}
+
+.cart:after {
+    bottom: 100%;
+    left: 88%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-bottom-color: white;
+    border-width: 8px;
+    margin-left: -8px;
+}

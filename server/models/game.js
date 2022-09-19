@@ -24,7 +24,7 @@ const gameSchema = mongoose.Schema({
     },
     required: false,
   },
-  available: {
+  isAvailable: {
     type: Boolean,
     required: true,
   },

@@ -52,13 +52,16 @@ const getGameInfo = async (req, res) => {
 
 const addGame = async (req, res) => {
   const errors = {};
-
+  console.log("add game");
   // validation
   if (!req.body.name) {
     errors.name = { message: "Please, type the name of Game" };
   }
   if (!req.body.price) {
     errors.price = { message: "Please, type the price of Game" };
+  }
+  if (!req.body.isAvailable) {
+    errors.price = { message: "Please, type availability of Game" };
   }
   if (!req.body.categoryName) {
     errors.categoryName = { message: "Please, type the category of Game" };
@@ -81,15 +84,20 @@ const addGame = async (req, res) => {
   }
 
   try {
-    const { name, price, categoryName, accessKey, gameInfo, available } =
+    const { name, price, categoryName, accessKey, gameInfo, isAvailable } =
       req.body;
+    if (isAvailable == "true") {
+      isAvailable = true;
+    } else {
+      isAvailable = false;
+    }
     const game = await Game.create({
       name,
       price,
+      image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
       categoryName,
       gameInfo,
-      available,
-      image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
+      isAvailable,
       accessKey,
     });
 
@@ -111,9 +119,33 @@ const deleteGame = async (req, res) => {
   }
 };
 
+const changeAvailibility = async (req, res) => {
+  try {
+    if (req.query.isAvailable == "true") {
+      isTrueSet = true;
+    } else {
+      isTrueSet = false;
+    }
+    const game = await Game.updateOne(
+      {
+        _id: req.params.id,
+      },
+      {
+        $set: { available: isTrueSet },
+      }
+    );
+    res.status(200).json(game);
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Can't updata an availibility of the game" });
+  }
+};
+
 module.exports = {
   getGames,
   getGameInfo,
   addGame,
+  changeAvailibility,
   deleteGame,
 };

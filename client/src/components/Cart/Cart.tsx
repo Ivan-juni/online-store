@@ -4,7 +4,8 @@ import CartGame from './CartGame/CartGame';
 
 const Cart: React.FC = () => {
     return (
-        <div className={styles.wrapper}>
+        <>
+         <div className={styles.wrapper}>
             <table className={styles.cart}>
                 <tr>
                     <th className={styles.cart__caption}>
@@ -31,6 +32,7 @@ const Cart: React.FC = () => {
                 </tr>
             </table>
         </div>
+        </>
     );
 };
 

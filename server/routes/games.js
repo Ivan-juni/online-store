@@ -7,6 +7,7 @@ const {
   getGameInfo,
   addGame,
   deleteGame,
+  changeAvailibility,
 } = require("../controllers/games");
 
 // Where store download files
@@ -15,7 +16,7 @@ const storage = multer.diskStorage({
   filename: (req, file, callback) => {
     callback(
       null,
-      file.filename + "-" + Date.now() + path.extname(file.originalname)
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
     );
   },
 });
@@ -31,10 +32,10 @@ router.get("/:id/gameInfo", getGameInfo);
 // @route GET /api/games?name=
 // @route GET /api/games?categoryName=
 // @des Get games
-router.get("", getGames);
+router.get("/", getGames);
 
 // !Admin panel
-// @route POST /api/games
+// @route POST /api/games/
 // @des Add a game
 router.post("/", upload.single("image"), addGame);
 
@@ -42,8 +43,8 @@ router.post("/", upload.single("image"), addGame);
 // @des Delete a game
 router.delete("/:id", deleteGame);
 
-// @route PUT /api/games/:id
-// @des Set available/unavailable
-router.put("/:id", (req, res) => res.send("Availibilyty of Game was changed"));
+// @route PUT /api/games/:id?isAvailable=(true, false)
+// @des Set availibility
+router.put("/:id", changeAvailibility);
 
 module.exports = router;
