@@ -1,5 +1,5 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import cartReducer from "./reducers/cart-reducer";
+import cartReducer from "./reducers/CartSlice";
 
 const rootReducer = combineReducers({
     cart: cartReducer

@@ -2,8 +2,35 @@ import React from 'react';
 import styles from './game.module.css';
 import game_image from '../../assets/images/forza.png';
 import info_icon from '../../assets/images/info-icon.svg';
+import { addItemInCart } from '../../store/reducers/CartSlice';
+import { useAppDispatch } from '../../hooks/redux';
+import { IGame } from '../../models/IGame';
 
-const Game: React.FC = () => {
+type PropsType = {
+    game: IGame
+}
+
+const Game: React.FC<PropsType> = ({ game }) => {
+    // const game = {
+    //     id: '1412',
+    //     name: 'Forza',
+    //     price: 1200,
+    //     categoryName: ['Racing', 'Open World'],
+    //     isAvailable: true,
+    //     image: game_image,
+    //     gameInfo: {
+    //         title: "FORZA HORIZON 4",
+    //         description: "lorem10gdsdgldsgfdhdhdfhdf"
+    //     }
+    // }
+
+    const dispatch = useAppDispatch();
+    const handleClick = (e: any) => {
+        e.stopPropagation();
+        // * id будет браться после маппинга в HomePage, из пропсов game.id
+        dispatch(addItemInCart(game.id)); // !дописать санку после готовности апи
+    }
+
     return (
         <div className={styles.game}>
             <div className={styles.game__image}>
@@ -20,7 +47,9 @@ const Game: React.FC = () => {
                 </div>
                 <div className={styles.panel__cart}>
                     <div className={styles.cart__add}>
-                        <button className={styles.btn_add}>Add to cart</button>
+                        <button className={styles.btn_add}
+                                onClick={handleClick}
+                        >Add to cart</button>
                     </div>
                     <div>
                         <span className={styles.price}>3200</span>uah

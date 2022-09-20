@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './header.module.css';
 
-const Header: React.FC = () => {
-    const [isCartActive, setCartActive] = useState(false);
+type PropsType = {
+    setCartActive: React.Dispatch<React.SetStateAction<boolean>>
+};
+
+const Header: React.FC<PropsType> = ({setCartActive}) => {
     return (
         <header className={styles.wrapper}>
             <h1 className={styles.caption}>Game store</h1>

@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
-import HomePage from './pages/HomePage/HomePage';
+import AppRouter from './components/AppRouter';
 
 function App() {
+  // Opening the Cart
+  const [isCartActive, setCartActive] = useState(false);
+
   return (
     <div className="wrapper">
-      <Header />
-      <HomePage />
+      <Header setCartActive={setCartActive}/>
+      <div className="main">
+        <AppRouter isCartActive={isCartActive}/>
+      </div>
       <Footer />
     </div>
   );
