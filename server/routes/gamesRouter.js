@@ -1,27 +1,27 @@
 const express = require("express");
-const multer = require("multer");
+// const multer = require("multer");
 const router = express.Router();
-const path = require("path");
+// const path = require("path");
 const {
   getGames,
   getGameInfo,
   addGame,
   deleteGame,
   changeAvailibility,
-} = require("../controllers/games");
+} = require("../controllers/gamesController");
 
-// Where store download files
-const storage = multer.diskStorage({
-  destination: "./assets/",
-  filename: (req, file, callback) => {
-    callback(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
+// // Where store download files
+// const storage = multer.diskStorage({
+//   destination: "./assets/",
+//   filename: (req, file, callback) => {
+//     callback(
+//       null,
+//       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+//     );
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 // @route GET /api/games/:id/gameInfo
 // @des Get game info
@@ -37,7 +37,8 @@ router.get("/", getGames);
 // !Admin panel
 // @route POST /api/games/
 // @des Add a game
-router.post("/", upload.single("image"), addGame);
+// router.post("/", upload.single("image"), addGame);
+router.post("/", addGame);
 
 // @route DELETE /api/games/:id
 // @des Delete a game

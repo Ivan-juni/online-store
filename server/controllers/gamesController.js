@@ -1,4 +1,7 @@
+const ApiError = require("../error/ApiError");
 const Game = require("../models/game");
+const uuid = require("uuid");
+const path = require("path");
 
 const getGames = async (req, res) => {
   try {
@@ -29,14 +32,18 @@ const getGames = async (req, res) => {
 
     res.status(200).json(games);
   } catch (error) {
-    res.status(400).json({ message: "Can't find a game" });
+    // res.status(400).json({ message: "Can't find a game" });
+    next(ApiError.internal("Can't find a game"));
   }
 };
 
-const getGameInfo = async (req, res) => {
+const getGameInfo = async (req, res, next) => {
   try {
     let game;
     const { id } = req.params;
+    if (!id) {
+      return next(ApiError.badRequest("Id wasn't typed"));
+    }
     game = await Game.find(
       {
         _id: id,
@@ -46,11 +53,12 @@ const getGameInfo = async (req, res) => {
 
     res.status(200).json(game);
   } catch (error) {
-    res.status(400).json({ message: "Can't find a game" });
+    // res.status(400).json({ message: "Can't find a gameInfo" });
+    next(ApiError.internal("Can't find a gameInfo"));
   }
 };
 
-const addGame = async (req, res) => {
+const addGame = async (req, res, next) => {
   const errors = {};
   console.log("add game");
   // validation
@@ -84,6 +92,10 @@ const addGame = async (req, res) => {
   }
 
   try {
+    // Вместо multer
+    let fileName = uuid.v4() + ".jpg";
+    img.mv(path.resolve(__dirname, "../static", fileName));
+
     const { name, price, categoryName, accessKey, gameInfo, isAvailable } =
       req.body;
     if (isAvailable == "true") {
@@ -91,23 +103,26 @@ const addGame = async (req, res) => {
     } else {
       isAvailable = false;
     }
+
     const game = await Game.create({
       name,
-      price,
-      image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
+      price: price,
+      // image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
+      image: `http://localhost:${process.env.PORT}/static/${fileName}`,
       categoryName,
       gameInfo,
       isAvailable,
       accessKey,
     });
-
+    console.log("SUCCESS");
     res.status(201).json(game);
   } catch (error) {
-    res.status(500).json({ message: "Can't add a game" });
+    // res.status(400).json({ message: "Can't add a game" });
+    next(ApiError.badRequest(error.message));
   }
 };
 
-const deleteGame = async (req, res) => {
+const deleteGame = async (req, res, next) => {
   try {
     const game = await Game.deleteOne({
       _id: req.params.id,
@@ -115,11 +130,12 @@ const deleteGame = async (req, res) => {
 
     res.status(200).json(game);
   } catch (error) {
-    res.status(400).json({ message: "Can't find and delete a game" });
+    // res.status(400).json({ message: "Can't find and delete a game" });
+    next(ApiError.badRequest("Can't find and delete a game"));
   }
 };
 
-const changeAvailibility = async (req, res) => {
+const changeAvailibility = async (req, res, next) => {
   try {
     if (req.query.isAvailable == "true") {
       isTrueSet = true;
@@ -136,9 +152,8 @@ const changeAvailibility = async (req, res) => {
     );
     res.status(200).json(game);
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Can't updata an availibility of the game" });
+    // res.status(400).json({ message: "Can't update an availibility of the game" });
+    next(ApiError.badRequest("Can't update an availibility of the game"));
   }
 };
 
