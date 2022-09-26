@@ -1,7 +1,7 @@
 const ApiError = require("../error/ApiError");
 const Game = require("../models/game");
-const uuid = require("uuid");
-const path = require("path");
+// const uuid = require("uuid");
+// const path = require("path");
 
 const getGames = async (req, res) => {
   try {
@@ -60,7 +60,6 @@ const getGameInfo = async (req, res, next) => {
 
 const addGame = async (req, res, next) => {
   const errors = {};
-  console.log("add game");
   // validation
   if (!req.body.name) {
     errors.name = { message: "Please, type the name of Game" };
@@ -92,11 +91,7 @@ const addGame = async (req, res, next) => {
   }
 
   try {
-    // Вместо multer
-    let fileName = uuid.v4() + ".jpg";
-    img.mv(path.resolve(__dirname, "../static", fileName));
-
-    const { name, price, categoryName, accessKey, gameInfo, isAvailable } =
+    let { name, price, categoryName, accessKey, gameInfo, isAvailable } =
       req.body;
     if (isAvailable == "true") {
       isAvailable = true;
@@ -106,15 +101,13 @@ const addGame = async (req, res, next) => {
 
     const game = await Game.create({
       name,
-      price: price,
-      // image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
-      image: `http://localhost:${process.env.PORT}/static/${fileName}`,
+      price: Number(price),
+      image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
       categoryName,
       gameInfo,
       isAvailable,
       accessKey,
     });
-    console.log("SUCCESS");
     res.status(201).json(game);
   } catch (error) {
     // res.status(400).json({ message: "Can't add a game" });

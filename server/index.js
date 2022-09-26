@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const fileUpload = require("express-fileupload");
 const router = require("./routes/index");
 const errorHandler = require("./middleware/ErrorHandlingMiddleware");
 
@@ -13,9 +12,6 @@ const app = express();
 app.use(cors());
 // For parsing apllication/json
 app.use(express.json());
-// For file uploading (images)
-app.use(express.static(path.resolve(__dirname, "static")));
-app.use(fileUpload({}));
 
 // For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
