@@ -1,38 +1,82 @@
 const ApiError = require("../error/ApiError");
 const Game = require("../models/game");
-// const uuid = require("uuid");
-// const path = require("path");
 
-const getGames = async (req, res) => {
+const getGames = async (req, res, next) => {
   try {
-    const { id, name, categoryName } = req.query;
+    let { id, name, categoryName, price, limit, page } = req.query;
     let games;
 
-    if (!id && name && !categoryName) {
+    let priceRange = price.split("-");
+
+    // pagination
+    page = page || 1;
+    limit = limit || 5;
+    let offset = page * limit - limit;
+    //
+
+    if (!id && price && !categoryName && !name) {
       games = await Game.find({
-        name: { $in: name },
-      });
+        price: { $gte: +priceRange[0], $lte: +priceRange[1] },
+      })
+        .limit(limit)
+        .skip(offset);
     }
-    if (id && !categoryName && !name) {
+
+    if (!id && name && !categoryName) {
+      if (!price) {
+        games = await Game.find({
+          name: { $regex: name, $options: "i" },
+        })
+          .limit(limit)
+          .skip(offset);
+      } else if (price) {
+        games = await Game.find({
+          name: { $regex: name, $options: "i" },
+          price: { $gte: +priceRange[0], $lte: +priceRange[1] },
+        })
+          .limit(limit)
+          .skip(offset);
+      }
+    }
+    if (id && !categoryName && !name && !price) {
       games = await Game.find({
         _id: { $in: id },
-      });
+      })
+        .limit(limit)
+        .skip(offset);
     }
-    if (!id && !categoryName && !name) {
-      games = await Game.find();
+    if (!id && !categoryName && !name && !price) {
+      games = await Game.find().limit(limit).skip(offset);
     }
     if (!id && !name && categoryName) {
-      games = await Game.find({
-        categoryName: { $in: categoryName },
-      });
+      if (!price) {
+        games = await Game.find({
+          categoryName: { $in: categoryName },
+        })
+          .limit(limit)
+          .skip(offset);
+      } else if (price) {
+        games = await Game.find({
+          categoryName: { $in: categoryName },
+          price: { $gte: +priceRange[0], $lte: +priceRange[1] },
+        })
+          .limit(limit)
+          .skip(offset);
+      }
     }
-    if ((id && categoryName) || (id && name) || (categoryName && name)) {
+    if (
+      (id && categoryName) ||
+      (id && name) ||
+      (categoryName && name) ||
+      (id && price)
+    ) {
       res.status(400).json({ message: "You can't find by this params" });
     }
 
     res.status(200).json(games);
   } catch (error) {
     // res.status(400).json({ message: "Can't find a game" });
+    console.log(error);
     next(ApiError.internal("Can't find a game"));
   }
 };
