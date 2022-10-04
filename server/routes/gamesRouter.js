@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const router = express.Router();
+const checkRole = require("../middleware/checkRoleMiddleware");
 const path = require("path");
 const {
   getGames,
@@ -38,12 +39,12 @@ router.get("/", getGames);
 // !Admin panel
 // @route POST /api/games/
 // @des Add a game
-router.post("/", upload.single("image"), addGame);
+router.post("/", checkRole("ADMIN"), upload.single("image"), addGame);
 // router.post("/", addGame);
 
 // @route DELETE /api/games/:id
 // @des Delete a game
-router.delete("/:id", deleteGame);
+router.delete("/:id", checkRole("ADMIN"), deleteGame);
 
 // @route PUT /api/games/:id?isAvailable=(true, false)
 // @des Set availibility
