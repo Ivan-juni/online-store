@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const router = express.Router();
+const checkRole = require("../middleware/checkRoleMiddleware");
 const path = require("path");
 const {
   getGames,
@@ -8,7 +9,7 @@ const {
   addGame,
   deleteGame,
   changeAvailibility,
-} = require("../controllers/games");
+} = require("../controllers/gamesController");
 
 // Where store download files
 const storage = multer.diskStorage({
@@ -25,6 +26,7 @@ const upload = multer({ storage });
 
 // @route GET /api/games/:id/gameInfo
 // @des Get game info
+// !todo /gameInfo/:id
 router.get("/:id/gameInfo", getGameInfo);
 
 // @route GET /api/games
@@ -37,11 +39,12 @@ router.get("/", getGames);
 // !Admin panel
 // @route POST /api/games/
 // @des Add a game
-router.post("/", upload.single("image"), addGame);
+router.post("/", checkRole("ADMIN"), upload.single("image"), addGame);
+// router.post("/", addGame);
 
 // @route DELETE /api/games/:id
 // @des Delete a game
-router.delete("/:id", deleteGame);
+router.delete("/:id", checkRole("ADMIN"), deleteGame);
 
 // @route PUT /api/games/:id?isAvailable=(true, false)
 // @des Set availibility
