@@ -6,8 +6,6 @@ const getGames = async (req, res, next) => {
     let { id, name, categoryName, price, limit, page } = req.query;
     let games;
 
-    let priceRange = price.split("-");
-
     // pagination
     page = page || 1;
     limit = limit || 5;
@@ -15,6 +13,7 @@ const getGames = async (req, res, next) => {
     //
 
     if (!id && price && !categoryName && !name) {
+      let priceRange = price.split("-");
       games = await Game.find({
         price: { $gte: +priceRange[0], $lte: +priceRange[1] },
       })
@@ -24,12 +23,15 @@ const getGames = async (req, res, next) => {
 
     if (!id && name && !categoryName) {
       if (!price) {
+        let priceRange = ["0", "10000"];
         games = await Game.find({
           name: { $regex: name, $options: "i" },
+          price: { $gte: +priceRange[0], $lte: +priceRange[1] },
         })
           .limit(limit)
           .skip(offset);
       } else if (price) {
+        let priceRange = price.split("-");
         games = await Game.find({
           name: { $regex: name, $options: "i" },
           price: { $gte: +priceRange[0], $lte: +priceRange[1] },
@@ -56,6 +58,7 @@ const getGames = async (req, res, next) => {
           .limit(limit)
           .skip(offset);
       } else if (price) {
+        let priceRange = price.split("-");
         games = await Game.find({
           categoryName: { $in: categoryName },
           price: { $gte: +priceRange[0], $lte: +priceRange[1] },
