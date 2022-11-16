@@ -1,0 +1,458 @@
+openapi: 3.0.3
+info:
+  title: Online game-store API
+  description: >
+    API for an online game-store. Powered by Node.js (express) & MongoDB
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8000/api'
+    description: 'localhost'
+paths:
+  /games:
+    get:
+      tags:
+        - Game
+      description: Get all games from the list
+      summary: Get games
+      operationId: fetchGames
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/categoryName'
+        - $ref: '#/components/parameters/price'
+        - $ref: '#/components/parameters/name'
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+          description: The number of the returning page (1 by default)
+          allowEmptyValue: true
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            example: 5
+          description: The numbers of items to return (5 by default)
+          allowEmptyValue: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/games'
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Game
+      description: Add a game to an online-store list
+      summary: Add a game
+      operationId: addGame
+      requestBody:
+        description: game
+        required: true
+        content:
+          multipart/form-data:
+            # application/json:
+            schema:
+              title: game
+              allOf:
+                - $ref: '#/components/schemas/game'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/game'
+
+  /games/{id}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Game
+      description: Deletes the game by ID
+      summary: Delete game
+      operationId: removeGame
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            example: 63663a2974961900de10e9b7
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/game'
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Game
+      description: Change the availability property of the game
+      summary: Change the availability
+      operationId: changeAvailability
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            example: 63663a2974961900de10e9b7
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+        - in: query
+          name: isAvailable
+          schema:
+            type: boolean
+            example: false
+          description: Availability property
+          allowEmptyValue: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/game'
+
+  /games/gameInfo/{id}:
+    get:
+      tags:
+        - Game
+      description: Gets an game info by the typed id
+      summary: Get game info
+      operationId: getGameInfo
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            example: 1
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/games'
+
+  /games/accessKey:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Game
+      description: Gets an games accessKeys
+      summary: Get game accessKey
+      operationId: getAccessKey
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            example: 6325a4abca830acc3482a172,6325a657ca830acc3482a175
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    accessKey:
+                      type: string
+                description: access keys of games
+
+  /cart:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Cart
+      description: Gets authinticated user's cart
+      summary: Get cart
+      operationId: fetchCart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/cart'
+
+  /auth/:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Auth
+      description: Check the authorization
+      summary: Check the authorization
+      operationId: check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: token
+                example: '89df9d8nv85nv0.4uv0vm95uvkk45uv40y4.04u50d45g45gy4g4'
+
+  /auth/registration:
+    post:
+      tags:
+        - Auth
+      description: Sing up the system
+      summary: Sing up
+      operationId: registration
+      requestBody:
+        description: Registation body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+              required:
+                - name
+                - email
+              example:
+                email: 'test@gmail.com'
+                password: 'qwerty'
+                role: 'ADMIN'
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: token
+                example: '89df9d8nv85nv0.4uv0vm95uvkk45uv40y4.04u50d45g45gy4g4'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      description: Sing in the system
+      summary: Sing in
+      operationId: login
+      requestBody:
+        description: login body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+              required:
+                - name
+                - email
+              example:
+                email: 'test@gmail.com'
+                password: 'qwerty'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: token
+                example: '89df9d8nv85nv0.4uv0vm95uvkk45uv40y4.04u50d45g45gy4g4'
+
+components:
+  parameters:
+    id:
+      name: id
+      in: query
+      required: false
+      description: The ID of the game to interact with
+      schema:
+        $ref: '#/components/schemas/game_id'
+    categoryName:
+      name: Racing
+      in: query
+      required: false
+      description: The categoryName of the game
+      schema:
+        type: string
+        # example: 'Racing'
+    name:
+      name: Forza Horizon 4
+      in: query
+      required: false
+      description: The name of the game
+      schema:
+        type: string
+        # $ref: '#/components/schemas/name'
+    price:
+      name: 800-1200
+      in: query
+      required: false
+      description: The price of the game
+      schema:
+        type: string
+        # example: '800-1200'
+
+  schemas:
+    game_id:
+      description: The ID of the game
+      type: string
+      example: '6325a4abca830acc3482a172'
+
+    games:
+      type: array
+      items:
+        $ref: '#/components/schemas/game'
+
+    game:
+      description: The game
+      type: object
+      properties:
+        # _id:
+        #   $ref: '#/components/schemas/game_id'
+        name:
+          $ref: '#/components/schemas/name'
+        price:
+          $ref: '#/components/schemas/price'
+        image:
+          $ref: '#/components/schemas/image'
+        categoryName:
+          $ref: '#/components/schemas/categoryName'
+        gameInfo:
+          $ref: '#/components/schemas/gameInfo'
+        accessKey:
+          $ref: '#/components/schemas/accessKey'
+        isAvailable:
+          $ref: '#/components/schemas/isAvailable'
+
+    name:
+      description: The name of the game
+      type: string
+      example: 'Forza Horizon 4'
+
+    price:
+      description: The price of the game
+      type: integer
+      format: int32
+      example: 1000
+
+    image:
+      description: The image path of the game
+      type: string
+      format: binary
+      # example: 'http://localhost:8000/static/image-1663411371349.png'
+
+    categoryName:
+      description: The categories of the game
+      type: array
+      items:
+        type: string
+      example:
+        - 'Racing'
+        - 'Open world'
+
+    gameInfo:
+      description: The gameInfo (title, description) of the game
+      allOf:
+        - $ref: '#/components/schemas/info'
+
+    accessKey:
+      description: The accessKey to the game
+      type: string
+      example: 'iusg7983486sjosgl20sfshd'
+
+    isAvailable:
+      description: An avaiability of the game
+      type: boolean
+      example: false
+
+    info:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          description: The promo of the game
+          type: string
+          example: 'Most popular racing game in 2022 - Forza Horizon'
+        description:
+          description: The description of the game
+          type: string
+          example: >
+            Forza Horizon 4 is a racing video game set in an open world environment based in a fictionalised Great Britain, with regions that include condensed representations of Edinburgh, the Scottish Highlands, the Lake District (including Derwentwater), Ambleside and the Cotswolds (including Broadway), Bamburgh among others.
+
+    cart:
+      type: object
+      description: User's cart
+      required:
+        - _id
+        - userId
+        - gameId
+      properties:
+        _id:
+          description: The id of the cart
+          type: string
+          example: '6353b55bd1fdeaf159a87def'
+        userId:
+          description: The id of the user, which cart it is
+          type: string
+          example: '6353b55bd1fdeaf159a87ded'
+        gameId:
+          description: The games id, which is in cart
+          type: array
+          items:
+            type: string
+          example:
+            - '6325a657ca830acc3482a175'
+            - '6325aa189afc3549464abb42'
+
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      description: jwt token to authorize requests.
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes

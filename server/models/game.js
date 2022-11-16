@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const gameSchema = mongoose.Schema({
   name: {
@@ -18,10 +18,10 @@ const gameSchema = mongoose.Schema({
     required: true,
   },
   gameInfo: {
-    type: {
-      title: String,
-      description: String,
-    },
+    // type: {
+    title: String,
+    description: String,
+    // },
     required: false,
   },
   isAvailable: {
@@ -32,6 +32,6 @@ const gameSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-});
+})
 
-module.exports = mongoose.model("Game", gameSchema);
+module.exports = mongoose.model('Game', gameSchema)

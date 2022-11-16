@@ -1,43 +1,43 @@
-const ApiError = require("../error/ApiError");
-const Game = require("../models/game");
+const ApiError = require('../error/ApiError')
+const Game = require('../models/game')
 
 const getGames = async (req, res, next) => {
   try {
-    let { id, name, categoryName, price, limit, page } = req.query;
-    let games;
+    let { id, name, categoryName, price, limit, page } = req.query
+    let games
 
     // pagination
-    page = page || 1;
-    limit = limit || 5;
-    let offset = page * limit - limit;
+    page = page || 1
+    limit = limit || 5
+    let offset = page * limit - limit
     //
 
     if (!id && price && !categoryName && !name) {
-      let priceRange = price.split("-");
+      let priceRange = price.split('-')
       games = await Game.find({
         price: { $gte: +priceRange[0], $lte: +priceRange[1] },
       })
         .limit(limit)
-        .skip(offset);
+        .skip(offset)
     }
 
     if (!id && name && !categoryName) {
       if (!price) {
-        let priceRange = ["0", "10000"];
+        let priceRange = ['0', '10000']
         games = await Game.find({
-          name: { $regex: name, $options: "i" },
+          name: { $regex: name, $options: 'i' },
           price: { $gte: +priceRange[0], $lte: +priceRange[1] },
         })
           .limit(limit)
-          .skip(offset);
+          .skip(offset)
       } else if (price) {
-        let priceRange = price.split("-");
+        let priceRange = price.split('-')
         games = await Game.find({
-          name: { $regex: name, $options: "i" },
+          name: { $regex: name, $options: 'i' },
           price: { $gte: +priceRange[0], $lte: +priceRange[1] },
         })
           .limit(limit)
-          .skip(offset);
+          .skip(offset)
       }
     }
     if (id && !categoryName && !name && !price) {
@@ -45,10 +45,10 @@ const getGames = async (req, res, next) => {
         _id: { $in: id },
       })
         .limit(limit)
-        .skip(offset);
+        .skip(offset)
     }
     if (!id && !categoryName && !name && !price) {
-      games = await Game.find().limit(limit).skip(offset);
+      games = await Game.find().limit(limit).skip(offset)
     }
     if (!id && !name && categoryName) {
       if (!price) {
@@ -56,15 +56,15 @@ const getGames = async (req, res, next) => {
           categoryName: { $in: categoryName },
         })
           .limit(limit)
-          .skip(offset);
+          .skip(offset)
       } else if (price) {
-        let priceRange = price.split("-");
+        let priceRange = price.split('-')
         games = await Game.find({
           categoryName: { $in: categoryName },
           price: { $gte: +priceRange[0], $lte: +priceRange[1] },
         })
           .limit(limit)
-          .skip(offset);
+          .skip(offset)
       }
     }
     if (
@@ -73,78 +73,95 @@ const getGames = async (req, res, next) => {
       (categoryName && name) ||
       (id && price)
     ) {
-      res.status(400).json({ message: "You can't find by this params" });
+      res.status(400).json({ message: "You can't find by this params" })
     }
 
-    res.status(200).json(games);
+    res.status(200).json(games)
   } catch (error) {
-    // res.status(400).json({ message: "Can't find a game" });
-    console.log(error);
-    next(ApiError.internal("Can't find a game"));
+    next(error)
   }
-};
+}
+
+const getAccessKey = async (req, res, next) => {
+  try {
+    const { id } = req.query
+    if (!id) {
+      return next(ApiError.badRequest("Id hadn't typed"))
+    }
+    let ids = id.split(',')
+
+    const accessKeys = await Game.find({ _id: { $in: ids } }, { accessKey: 1 })
+
+    res.status(200).json(accessKeys)
+  } catch (error) {
+    next(error)
+  }
+}
 
 const getGameInfo = async (req, res, next) => {
   try {
-    let game;
-    const { id } = req.params;
+    let game
+    const { id } = req.params
     if (!id) {
-      return next(ApiError.badRequest("Id wasn't typed"));
+      return next(ApiError.badRequest("Id hadn't typed"))
     }
     game = await Game.find(
       {
         _id: id,
       },
       { gameInfo: 1 }
-    );
+    )
 
-    res.status(200).json(game);
+    res.status(200).json(game)
   } catch (error) {
     // res.status(400).json({ message: "Can't find a gameInfo" });
-    next(ApiError.internal("Can't find a gameInfo"));
+    next(error)
   }
-};
+}
 
 const addGame = async (req, res, next) => {
-  const errors = {};
+  const errors = {}
   // validation
   if (!req.body.name) {
-    errors.name = { message: "Please, type the name of Game" };
+    errors.name = { message: 'Please, type the name of Game' }
   }
   if (!req.body.price) {
-    errors.price = { message: "Please, type the price of Game" };
+    errors.price = { message: 'Please, type the price of Game' }
   }
   if (!req.body.isAvailable) {
-    errors.price = { message: "Please, type availability of Game" };
+    errors.price = { message: 'Please, type availability of Game' }
   }
   if (!req.body.categoryName) {
-    errors.categoryName = { message: "Please, type the category of Game" };
+    errors.categoryName = { message: 'Please, type the category of Game' }
   }
   if (!req.body.accessKey) {
-    errors.accessKey = { message: "Please, type the accessKey of Game" };
+    errors.accessKey = { message: 'Please, type the accessKey of Game' }
   }
   if (!req.file) {
-    errors.image = { message: "Please, add the Game image" };
+    errors.image = { message: 'Please, add the Game image' }
   }
   if (
     req.body.gameInfo.description &&
     req.body.gameInfo.description.length > 400
   ) {
-    errors.gameInfo = { message: "Too long description" };
+    errors.gameInfo = { message: 'Too long description' }
   }
 
   if (Object.keys(errors).length > 0) {
-    return res.status(400).json(errors);
+    return res.status(400).json(errors)
   }
 
   try {
     let { name, price, categoryName, accessKey, gameInfo, isAvailable } =
-      req.body;
-    if (isAvailable == "true") {
-      isAvailable = true;
+      req.body
+    if (isAvailable == 'true') {
+      isAvailable = true
     } else {
-      isAvailable = false;
+      isAvailable = false
     }
+
+    // // Hash accessKey
+    // const hashAccessKey = await bcrypt.hash(accessKey, 5)
 
     const game = await Game.create({
       name,
@@ -154,53 +171,54 @@ const addGame = async (req, res, next) => {
       gameInfo,
       isAvailable,
       accessKey,
-    });
-    res.status(201).json(game);
+    })
+    res.status(201).json(game)
   } catch (error) {
     // res.status(400).json({ message: "Can't add a game" });
-    next(ApiError.badRequest(error.message));
+    next(error)
   }
-};
+}
 
 const deleteGame = async (req, res, next) => {
   try {
-    const game = await Game.deleteOne({
+    const game = await Game.findOneAndDelete({
       _id: req.params.id,
-    });
+    })
 
-    res.status(200).json(game);
+    res.status(200).json(game)
   } catch (error) {
-    // res.status(400).json({ message: "Can't find and delete a game" });
-    next(ApiError.badRequest("Can't find and delete a game"));
+    next(error)
   }
-};
+}
 
 const changeAvailibility = async (req, res, next) => {
   try {
-    if (req.query.isAvailable == "true") {
-      isTrueSet = true;
+    if (req.query.isAvailable == 'true') {
+      isTrueSet = true
     } else {
-      isTrueSet = false;
+      isTrueSet = false
     }
-    const game = await Game.updateOne(
+    const game = await Game.findOneAndUpdate(
       {
         _id: req.params.id,
       },
       {
-        $set: { available: isTrueSet },
-      }
-    );
-    res.status(200).json(game);
+        $set: { isAvailable: isTrueSet },
+      },
+      { returnDocument: 'after' }
+    )
+
+    res.status(200).json(game)
   } catch (error) {
-    // res.status(400).json({ message: "Can't update an availibility of the game" });
-    next(ApiError.badRequest("Can't update an availibility of the game"));
+    next(error)
   }
-};
+}
 
 module.exports = {
   getGames,
+  getAccessKey,
   getGameInfo,
   addGame,
   changeAvailibility,
   deleteGame,
-};
+}
