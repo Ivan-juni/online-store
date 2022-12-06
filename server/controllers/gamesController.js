@@ -1,4 +1,5 @@
 const ApiError = require('../error/ApiError')
+const removePhoto = require('../utils/removePhoto')
 const Game = require('../models/game')
 
 const getGames = async (req, res, next) => {
@@ -67,32 +68,11 @@ const getGames = async (req, res, next) => {
           .skip(offset)
       }
     }
-    if (
-      (id && categoryName) ||
-      (id && name) ||
-      (categoryName && name) ||
-      (id && price)
-    ) {
+    if ((id && categoryName) || (id && name) || (categoryName && name) || (id && price)) {
       res.status(400).json({ message: "You can't find by this params" })
     }
 
     res.status(200).json(games)
-  } catch (error) {
-    next(error)
-  }
-}
-
-const getAccessKey = async (req, res, next) => {
-  try {
-    const { id } = req.query
-    if (!id) {
-      return next(ApiError.badRequest("Id hadn't typed"))
-    }
-    let ids = id.split(',')
-
-    const accessKeys = await Game.find({ _id: { $in: ids } }, { accessKey: 1 })
-
-    res.status(200).json(accessKeys)
   } catch (error) {
     next(error)
   }
@@ -103,7 +83,7 @@ const getGameInfo = async (req, res, next) => {
     let game
     const { id } = req.params
     if (!id) {
-      return next(ApiError.badRequest("Id hadn't typed"))
+      return next(ApiError.badRequest('Please, enter id'))
     }
     game = await Game.find(
       {
@@ -134,16 +114,10 @@ const addGame = async (req, res, next) => {
   if (!req.body.categoryName) {
     errors.categoryName = { message: 'Please, type the category of Game' }
   }
-  if (!req.body.accessKey) {
-    errors.accessKey = { message: 'Please, type the accessKey of Game' }
-  }
   if (!req.file) {
     errors.image = { message: 'Please, add the Game image' }
   }
-  if (
-    req.body.gameInfo.description &&
-    req.body.gameInfo.description.length > 400
-  ) {
+  if (req.body.gameInfo.description && req.body.gameInfo.description.length > 400) {
     errors.gameInfo = { message: 'Too long description' }
   }
 
@@ -152,25 +126,20 @@ const addGame = async (req, res, next) => {
   }
 
   try {
-    let { name, price, categoryName, accessKey, gameInfo, isAvailable } =
-      req.body
+    let { name, price, categoryName, gameInfo, isAvailable } = req.body
     if (isAvailable == 'true') {
       isAvailable = true
     } else {
       isAvailable = false
     }
 
-    // // Hash accessKey
-    // const hashAccessKey = await bcrypt.hash(accessKey, 5)
-
     const game = await Game.create({
       name,
       price: Number(price),
       image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
       categoryName,
-      gameInfo,
+      gameInfo: JSON.parse(gameInfo),
       isAvailable,
-      accessKey,
     })
     res.status(201).json(game)
   } catch (error) {
@@ -185,28 +154,64 @@ const deleteGame = async (req, res, next) => {
       _id: req.params.id,
     })
 
+    removePhoto(game.image)
+
     res.status(200).json(game)
   } catch (error) {
     next(error)
   }
 }
 
-const changeAvailibility = async (req, res, next) => {
+const updateGame = async (req, res, next) => {
   try {
-    if (req.query.isAvailable == 'true') {
-      isTrueSet = true
-    } else {
-      isTrueSet = false
+    const { id } = req.params
+    const changingValues = req.body
+
+    if (Object.keys(changingValues).length == 0) {
+      return next(ApiError.badRequest('Type at least one parameter'))
     }
+
+    if (req.file !== undefined && req.file !== null) {
+      changingValues.image = `http://localhost:${process.env.PORT}/static/${req.file.filename}`
+    }
+
+    if (!id) {
+      return next(ApiError.badRequest('Please, type the product id'))
+    }
+
+    if (changingValues.isAvailable) {
+      if (changingValues.isAvailable == 'true') {
+        changingValues.isAvailable = true
+      } else {
+        changingValues.isAvailable = false
+      }
+    }
+
+    if (changingValues.price) {
+      changingValues.price = Number(changingValues.price)
+    }
+
+    if (changingValues.gameInfo) {
+      changingValues.gameInfo = JSON.parse(changingValues.gameInfo)
+    }
+
+    const oldGame = await Game.findById(id)
+
+    if (!oldGame) {
+      return next(ApiError.badRequest('This game does not exist'))
+    }
+
     const game = await Game.findOneAndUpdate(
       {
-        _id: req.params.id,
+        _id: id,
       },
       {
-        $set: { isAvailable: isTrueSet },
+        $set: changingValues,
       },
       { returnDocument: 'after' }
     )
+
+    removePhoto(oldGame.image)
 
     res.status(200).json(game)
   } catch (error) {
@@ -216,9 +221,8 @@ const changeAvailibility = async (req, res, next) => {
 
 module.exports = {
   getGames,
-  getAccessKey,
   getGameInfo,
   addGame,
-  changeAvailibility,
   deleteGame,
+  updateGame,
 }

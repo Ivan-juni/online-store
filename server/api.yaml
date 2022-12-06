@@ -104,25 +104,68 @@ paths:
         - bearerAuth: []
       tags:
         - Game
-      description: Change the availability property of the game
-      summary: Change the availability
-      operationId: changeAvailability
+      description: Update game characteristics
+      summary: Update game
+      operationId: updGame
       parameters:
         - in: path
           name: id
           schema:
             type: string
-            example: 63663a2974961900de10e9b7
+            example: 637d20f667d118c26a15a7c9
           description: The id of the game
           allowEmptyValue: false
           required: true
-        - in: query
-          name: isAvailable
-          schema:
-            type: boolean
-            example: false
-          description: Availability property
-          allowEmptyValue: false
+      requestBody:
+        description: game properties
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              title: game
+              type: object
+              properties:
+                name:
+                  description: The name of the game
+                  allowEmptyValue: false
+                  type: string
+                price:
+                  description: The price of the game
+                  type: integer
+                  allowEmptyValue: false
+                  format: int32
+                image:
+                  description: The image path of the game
+                  type: string
+                  allowEmptyValue: false
+                  format: binary
+                categoryName:
+                  description: The categories of the game
+                  type: array
+                  allowEmptyValue: false
+                  items:
+                    type: string
+                gameInfo:
+                  description: The gameInfo (title, description) of the game
+                  allowEmptyValue: false
+                  type: object
+                  required:
+                    - title
+                    - description
+                  properties:
+                    title:
+                      description: The promo of the game
+                      type: string
+                      example: 'Most popular racing game in 2022 - Forza Horizon'
+                    description:
+                      description: The description of the game
+                      type: string
+                      example: 'Description of the product'
+
+                isAvailable:
+                  description: An avaiability of the game
+                  type: boolean
+                  allowEmptyValue: false
       responses:
         '200':
           description: OK
@@ -143,8 +186,8 @@ paths:
         - in: path
           name: id
           schema:
-            type: integer
-            example: 1
+            type: string
+            example: 6325a4abca830acc3482a172
           description: The id of the game
           allowEmptyValue: false
           required: true
@@ -156,40 +199,6 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/games'
-
-  /games/accessKey:
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - Game
-      description: Gets an games accessKeys
-      summary: Get game accessKey
-      operationId: getAccessKey
-      parameters:
-        - in: query
-          name: id
-          schema:
-            type: string
-            example: 6325a4abca830acc3482a172,6325a657ca830acc3482a175
-          description: The id of the game
-          allowEmptyValue: false
-          required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    _id:
-                      type: string
-                    accessKey:
-                      type: string
-                description: access keys of games
 
   /cart:
     get:
@@ -208,6 +217,125 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/cart'
+  /cart/{gameId}:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Cart
+      description: Add game to cart
+      summary: Add game to cart
+      operationId: AddToCart
+      parameters:
+        - in: path
+          name: gameId
+          schema:
+            type: string
+            example: 6325a657ca830acc3482a175
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/game'
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Cart
+      description: Deletes game from the cart
+      summary: Delete game form cart
+      operationId: removeGameFromCart
+      parameters:
+        - in: path
+          name: gameId
+          schema:
+            type: string
+            example: 63663a2974961900de10e9b7
+          description: The id of the game
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/game'
+
+  /cart/order:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Cart
+      description: Get orders
+      summary: Get orders
+      operationId: getOrders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  message:
+                    type: string
+                  games:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        accessKey:
+                          type: string
+                required:
+                  - message
+                  - games
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Cart
+      description: Make an order of games
+      summary: Make order
+      operationId: makeOrder
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  games:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        accessKey:
+                          type: string
+                required:
+                  - message
+                  - games
 
   /auth/:
     get:
@@ -247,15 +375,12 @@ paths:
                   type: string
                 email:
                   type: string
-                role:
-                  type: string
               required:
                 - name
                 - email
               example:
                 email: 'test@gmail.com'
                 password: 'qwerty'
-                role: 'ADMIN'
 
       responses:
         '200':
@@ -290,8 +415,8 @@ paths:
                 - name
                 - email
               example:
-                email: 'test@gmail.com'
-                password: 'qwerty'
+                email: 'admin@gmail.com'
+                password: 'admin'
       responses:
         '200':
           description: OK
@@ -300,7 +425,55 @@ paths:
               schema:
                 type: string
                 description: token
-                example: '89df9d8nv85nv0.4uv0vm95uvkk45uv40y4.04u50d45g45gy4g4'
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNjYzMjI0MDRlMzdkNjQzMWM3MjYyYiIsImVtYWlsIjoiYWRtaW5AZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNjcwMjQ2NTQ4LCJleHAiOjE2NzAzMzI5NDh9.iI8IpDVZYXAoRbmcR9Tsd8n8TSStWhtiJ2VOotbVegw'
+
+  /auth/changeRole:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Auth
+      description: Change user role
+      summary: Change role
+      operationId: changeRole
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            example: 6353b55bd1fdeaf159a87ded
+          description: The id of the user
+          allowEmptyValue: false
+          required: true
+        - in: query
+          name: role
+          schema:
+            type: string
+            example: ADMIN
+          description: The role you want to set
+          allowEmptyValue: false
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                required:
+                  - id
+                  - email
+                  - password
+                  - role
 
 components:
   parameters:
@@ -312,7 +485,7 @@ components:
       schema:
         $ref: '#/components/schemas/game_id'
     categoryName:
-      name: Racing
+      name: categoryName
       in: query
       required: false
       description: The categoryName of the game
@@ -320,7 +493,7 @@ components:
         type: string
         # example: 'Racing'
     name:
-      name: Forza Horizon 4
+      name: name
       in: query
       required: false
       description: The name of the game
@@ -328,13 +501,13 @@ components:
         type: string
         # $ref: '#/components/schemas/name'
     price:
-      name: 800-1200
+      name: price
       in: query
       required: false
       description: The price of the game
       schema:
         type: string
-        # example: '800-1200'
+        example: '0-1300'
 
   schemas:
     game_id:
@@ -363,8 +536,8 @@ components:
           $ref: '#/components/schemas/categoryName'
         gameInfo:
           $ref: '#/components/schemas/gameInfo'
-        accessKey:
-          $ref: '#/components/schemas/accessKey'
+        # accessKey:
+        #   $ref: '#/components/schemas/accessKey'
         isAvailable:
           $ref: '#/components/schemas/isAvailable'
 
@@ -399,10 +572,10 @@ components:
       allOf:
         - $ref: '#/components/schemas/info'
 
-    accessKey:
-      description: The accessKey to the game
-      type: string
-      example: 'iusg7983486sjosgl20sfshd'
+    # accessKey:
+    #   description: The accessKey to the game
+    #   type: string
+    #   example: 'iusg7983486sjosgl20sfshd'
 
     isAvailable:
       description: An avaiability of the game

@@ -34,8 +34,8 @@ class AuthController {
 
       const user = await User.create({
         email,
-        role,
         password: hashPassword,
+        role,
       })
       const cart = await Cart.create({
         userId: user._id,
@@ -49,26 +49,46 @@ class AuthController {
     }
   }
   async login(req, res, next) {
-    const { email, password } = req.body
+    try {
+      const { email, password } = req.body
 
-    const user = await User.findOne({
-      email: email,
-    })
-    if (!user) {
-      return next(ApiError.internal("User isn't exist"))
+      const user = await User.findOne({
+        email: email,
+      })
+      if (!user) {
+        return next(ApiError.internal("User isn't exist"))
+      }
+
+      let comparePassword = bcrypt.compareSync(password, user.password)
+      if (!comparePassword) {
+        return next(ApiError.internal('Incorrect password'))
+      }
+
+      const token = generateJwt(user._id, user.email, user.role)
+      return res.json({ token })
+    } catch (error) {
+      console.log('Error: ', error)
     }
-
-    let comparePassword = bcrypt.compareSync(password, user.password)
-    if (!comparePassword) {
-      return next(ApiError.internal('Incorrect password'))
-    }
-
-    const token = generateJwt(user._id, user.email, user.role)
-    return res.json({ token })
   }
   async check(req, res) {
     const token = generateJwt(req.user._id, req.user.email, req.user.role)
     res.json({ token })
+  }
+  async changeRole(req, res, next) {
+    try {
+      const { id, role } = req.query
+
+      if (!id || !role) {
+        return next(ApiError.badRequest('Error: type the id and role'))
+      }
+
+      const user = await User.findByIdAndUpdate(id, { role }, { new: true })
+
+      res.status(200).send(user)
+    } catch (error) {
+      console.log('Error: ', error)
+      return next(error)
+    }
   }
 }
 

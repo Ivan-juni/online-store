@@ -18,18 +18,14 @@ const gameSchema = mongoose.Schema({
     required: true,
   },
   gameInfo: {
-    // type: {
-    title: String,
-    description: String,
-    // },
+    type: {
+      title: String,
+      description: String,
+    },
     required: false,
   },
   isAvailable: {
     type: Boolean,
-    required: true,
-  },
-  accessKey: {
-    type: String,
     required: true,
   },
 })
