@@ -64,7 +64,7 @@ export default class GamesController {
   static async getGameInfo(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params
 
-    if (!id) return ApiError.badRequest('Please, enter id')
+    if (!id) throw ApiError.badRequest('Please, enter id')
 
     const game: Game = await GameModel.findOne(
       {
@@ -93,6 +93,7 @@ export default class GamesController {
 
       return res.status(201).json(game)
     } catch (error) {
+      removePhoto(`http://localhost:${process.env.PORT}/static/${req.file.filename}`)
       // yup validation error, return errors
       const errors = {}
       error.inner.forEach((e) => {
@@ -117,9 +118,9 @@ export default class GamesController {
     const { price, gameInfo, isAvailable }: IUpdateGame = req.body
     const changingValues: IUpdateGame = {}
 
-    if (!id) return ApiError.badRequest('Please, type the product id')
+    if (!id) throw ApiError.badRequest('Please, type the product id')
 
-    if (!price && !gameInfo && !req.file?.filename && !isAvailable) return ApiError.badRequest('Type at least one parameter')
+    if (!price && !gameInfo && !req.file?.filename && !isAvailable) throw ApiError.badRequest('Type at least one parameter')
 
     if (req.file?.filename) {
       changingValues.image = `http://localhost:${process.env.PORT}/static/${req.file.filename}`
@@ -143,9 +144,9 @@ export default class GamesController {
         GameModel.findOneAndUpdate({ _id: id }, { $set: changingValues }, { returnDocument: 'after' }),
       ])
 
-      if (!oldGame) return ApiError.badRequest('This game does not exist')
+      if (!oldGame) throw ApiError.badRequest('This game does not exist')
 
-      if (oldGame.image) {
+      if (changingValues.image) {
         await removePhoto(oldGame.image)
       }
 

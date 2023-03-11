@@ -21,13 +21,13 @@ export default class AuthController {
 
     const { email, password, role }: IRegistration = req.body
 
-    if (!email || !password) return ApiError.badRequest('Incorect email or password')
+    if (!email || !password) throw ApiError.badRequest('Incorect email or password')
 
     const candidate = await User.findOne({
       email,
     })
 
-    if (candidate) return ApiError.badRequest('User with this email already exists')
+    if (candidate) throw ApiError.badRequest('User with this email already exists')
 
     // Hash password
     const hashPassword = await bcrypt.hash(password, 5)
@@ -54,10 +54,10 @@ export default class AuthController {
       email: email,
     })
 
-    if (!user) return ApiError.internal("User isn't exist")
+    if (!user) throw ApiError.internal("User doesn't exist")
 
     const comparePassword = bcrypt.compareSync(password, user.password)
-    if (!comparePassword) return ApiError.internal('Incorrect password')
+    if (!comparePassword) throw ApiError.internal('Incorrect password')
 
     const token = generateJwt({ id: user._id.toString(), email: user.email, role: user.role })
     return res.json({ token })
@@ -68,7 +68,7 @@ export default class AuthController {
   async changeRole(req: Request, res: Response) {
     const { id, role } = req.query
 
-    if (!id || !role) return ApiError.badRequest('Error: type the id and role')
+    if (!id || !role) throw ApiError.badRequest('Error: type the id and role')
 
     const user = await User.findByIdAndUpdate(id, { role }, { new: true })
 

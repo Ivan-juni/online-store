@@ -14,7 +14,7 @@ export default class CartController {
     const cart: Cart = await CartModel.findOne({
       userId: id,
     })
-    if (!cart) return ApiError.internal("Can't find a cart")
+    if (!cart) throw ApiError.internal("Can't find a cart")
 
     const cartGames: Game[] = await GameModel.find({
       _id: { $in: cart.gameId },
@@ -26,8 +26,8 @@ export default class CartController {
     const { id } = req.user
     const { gameId } = req.params
 
-    if (!id) return ApiError.badRequest("User doesn't authorized")
-    if (!gameId) return ApiError.badRequest('Please, enter game id')
+    if (!id) throw ApiError.badRequest("User doesn't authorized")
+    if (!gameId) throw ApiError.badRequest('Please, enter game id')
 
     const cart: Cart = await CartModel.findOneAndUpdate(
       {
@@ -38,7 +38,7 @@ export default class CartController {
       },
       { new: true } // return the updated document
     )
-    if (!cart) return ApiError.internal("Can't find a cart")
+    if (!cart) throw ApiError.internal("Can't find a cart")
 
     const cartGames: Game[] = await GameModel.find({
       _id: { $in: cart.gameId },
@@ -50,7 +50,7 @@ export default class CartController {
   async makeOrder(req: Request, res: Response, next: NextFunction) {
     const { id, email } = req.user
 
-    if (!id || !email) return ApiError.badRequest("User doesn't authorized")
+    if (!id || !email) throw ApiError.unauthorizedError()
 
     const result: Array<{
       name: string
@@ -61,8 +61,8 @@ export default class CartController {
       userId: id,
     })
 
-    if (!cart) return ApiError.badRequest("Can't find a cart")
-    if (cart.gameId.length == 0) return ApiError.badRequest('Your cart is empty')
+    if (!cart) throw ApiError.badRequest("Can't find a cart")
+    if (cart.gameId.length == 0) throw ApiError.badRequest('Your cart is empty')
 
     const order: Order = await OrderModel.create({
       user: {
@@ -109,7 +109,7 @@ export default class CartController {
   async getOrders(req: Request, res: Response, next: NextFunction) {
     const orders: Order[] = await OrderModel.find()
 
-    if (!orders) return ApiError.internal("Can't find an orders")
+    if (!orders) throw ApiError.internal("Can't find an orders")
 
     return res.status(200).json(orders)
   }

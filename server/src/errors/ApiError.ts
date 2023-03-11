@@ -8,6 +8,10 @@ export default class ApiError extends Error {
     this.message = message
   }
 
+  static unauthorizedError() {
+    return new ApiError(401, 'User has not autorized')
+  }
+
   static badRequest(message: string) {
     return new ApiError(404, message)
   }
