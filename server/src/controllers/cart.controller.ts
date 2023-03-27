@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { Cart } from '../db/interfaces/cart.interface'
 import { Game } from '../db/interfaces/game.interface'
 import { Order } from '../db/interfaces/order.interface'
@@ -9,7 +9,7 @@ import ApiError from '../errors/ApiError'
 import generateKey from '../utils/generate-access-key.util'
 
 export default class CartController {
-  async getCart(req: Request, res: Response, next: NextFunction) {
+  static async getCart(req: Request, res: Response) {
     const { id } = req.user
     const cart: Cart = await CartModel.findOne({
       userId: id,
@@ -22,7 +22,7 @@ export default class CartController {
 
     return res.status(200).json(cartGames)
   }
-  async addGame(req: Request, res: Response, next: NextFunction) {
+  static async addGame(req: Request, res: Response) {
     const { id } = req.user
     const { gameId } = req.params
 
@@ -47,7 +47,7 @@ export default class CartController {
     return res.status(200).json(cartGames)
   }
 
-  async makeOrder(req: Request, res: Response, next: NextFunction) {
+  static async makeOrder(req: Request, res: Response) {
     const { id, email } = req.user
 
     if (!id || !email) throw ApiError.unauthorizedError()
@@ -87,7 +87,7 @@ export default class CartController {
 
     return res.status(200).send({ message: 'Ordered successfully', games: result })
   }
-  async removeGame(req: Request, res: Response, next: NextFunction) {
+  static async removeGame(req: Request, res: Response) {
     const { id } = req.user
     const { gameId } = req.params
 
@@ -106,7 +106,7 @@ export default class CartController {
 
     return res.status(200).json(cartGames)
   }
-  async getOrders(req: Request, res: Response, next: NextFunction) {
+  static async getOrders(req: Request, res: Response) {
     const orders: Order[] = await OrderModel.find()
 
     if (!orders) throw ApiError.internal("Can't find an orders")

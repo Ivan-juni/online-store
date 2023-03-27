@@ -10,5 +10,7 @@ export interface User {
   _id: Types.ObjectId
   email: string
   password: string
+  isActivated: boolean
+  activationLink: string
   role: 'USER' | 'ADMIN' | 'OWNER'
 }

@@ -7,7 +7,7 @@ import { addGameSchema } from './models/yup.schemas'
 import { IUpdateGame } from './models/update-game.interface'
 
 export default class GamesController {
-  static async getGames(req: Request, res: Response, next: NextFunction) {
+  static async getGames(req: Request, res: Response) {
     const { id, name, categoryName, price = '0-10000', limit: limitParam = '5', page: pageParam = '1' } = req.query
 
     const limit: number = +limitParam
@@ -61,7 +61,7 @@ export default class GamesController {
     return res.status(200).json(games)
   }
 
-  static async getGameInfo(req: Request, res: Response, next: NextFunction) {
+  static async getGameInfo(req: Request, res: Response) {
     const { id } = req.params
 
     if (!id) throw ApiError.badRequest('Please, enter id')
@@ -76,7 +76,7 @@ export default class GamesController {
     return res.status(200).json(game)
   }
 
-  static async addGame(req: Request, res: Response, next: NextFunction) {
+  static async addGame(req: Request, res: Response) {
     try {
       await addGameSchema.validate(req.body, { abortEarly: false })
 
@@ -103,7 +103,7 @@ export default class GamesController {
     }
   }
 
-  static async deleteGame(req: Request, res: Response, next: NextFunction) {
+  static async deleteGame(req: Request, res: Response) {
     const game: Game = await GameModel.findOneAndDelete({
       _id: req.params.id,
     })

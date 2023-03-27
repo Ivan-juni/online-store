@@ -1,20 +1,25 @@
 import { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
-import UserDto from '../dtos/user.dto'
+import ApiError from '../errors/ApiError'
+import tokenService from '../services/token.service'
 
 export default function (req: Request, res: Response, next: NextFunction) {
   if (req.method === 'OPTIONS') {
     next()
   }
   try {
-    const token = req.headers.authorization.split(' ')[1] // Bearer gfhdfhdhd
-    if (!token) {
-      return res.status(401).json({ message: 'User has not authorized' })
-    }
-    const decoded = jwt.verify(token, process.env.SECRET_KEY) as unknown as UserDto
-    req.user = decoded
+    const authorizationHeader = req.headers.authorization
+    if (!authorizationHeader) return next(ApiError.unauthorizedError())
+
+    const accessToken = authorizationHeader.split(' ')[1] // Bearer gfhdfhdhd
+    if (!accessToken) return next(ApiError.unauthorizedError())
+
+    const userData = tokenService.validateAccessToken(accessToken)
+    if (!userData) return next(ApiError.unauthorizedError())
+
+    req.user = userData
     next()
   } catch (e) {
-    res.status(401).json({ message: 'User has not authorized' })
+    console.log(e)
+    return next(ApiError.unauthorizedError())
   }
 }

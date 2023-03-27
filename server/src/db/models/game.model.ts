@@ -31,6 +31,6 @@ const gameSchema = new mongoose.Schema<Game>({
   },
 })
 
-const Game = mongoose.model<Game>('Game', gameSchema)
+const GameModel = mongoose.model<Game>('Game', gameSchema)
 
-export default Game
+export default GameModel

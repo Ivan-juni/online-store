@@ -12,7 +12,7 @@ export default function checkRole(role: string) {
       if (!token) {
         return res.status(401).json({ message: 'User has not authorized' })
       }
-      const decoded = jwt.verify(token, process.env.SECRET_KEY) as unknown as UserDto
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET) as unknown as UserDto
       if (decoded.role !== role) {
         return res.status(403).json({ message: "You haven't access" })
       }

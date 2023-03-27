@@ -1,76 +1,96 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import ApiError from '../errors/ApiError'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import User from '../db/models/user.model'
-import Cart from '../db/models/cart.model'
+import UserModel from '../db/models/user.model'
 import { loginSchema, registrationSchema } from './models/yup.schemas'
-import UserDto from '../dtos/user.dto'
 import { IRegistration } from './models/registration.interface'
 import { ILogin } from './models/login.interface'
-
-const generateJwt = ({ id, email, role }: UserDto) => {
-  return jwt.sign({ id, email, role }, process.env.SECRET_KEY, {
-    expiresIn: '24h',
-  })
-}
+import authService from '../services/auth.service'
+import setCookie from '../utils/set-cookie.util'
 
 export default class AuthController {
-  async registration(req: Request, res: Response) {
-    await registrationSchema.validate(req.body)
+  static async registration(req: Request, res: Response) {
+    try {
+      await registrationSchema.validate(req.body)
+    } catch (err) {
+      throw ApiError.internal(`Validation error: ${err.message}`)
+    }
 
-    const { email, password, role }: IRegistration = req.body
+    const { email, password }: IRegistration = req.body
 
     if (!email || !password) throw ApiError.badRequest('Incorect email or password')
 
-    const candidate = await User.findOne({
-      email,
-    })
+    const candidate = await UserModel.findOne({ email })
 
     if (candidate) throw ApiError.badRequest('User with this email already exists')
 
-    // Hash password
-    const hashPassword = await bcrypt.hash(password, 5)
+    const userData = await authService.registration({ email, password })
 
-    const user: User = await User.create({
-      email,
-      password: hashPassword,
-      role,
-    })
+    // храним refreshToken в куках
+    setCookie(res, userData.refreshToken)
 
-    await Cart.create({
-      userId: user._id,
-      gameId: [],
-    })
-    const token = generateJwt({ id: user._id.toString(), email: user.email, role: user.role })
-
-    return res.json({ token })
+    return res.json(userData)
   }
-  async login(req: Request, res: Response) {
+
+  static async activate(req: Request, res: Response) {
+    await authService.activate(req.params.link)
+
+    return res.redirect(process.env.CLIENT_URL)
+  }
+
+  static async login(req: Request, res: Response) {
     const { email, password }: ILogin = req.body
-    await loginSchema.validate({ email, password })
+    try {
+      await loginSchema.validate({ email, password })
+    } catch (err) {
+      throw ApiError.internal(`Validation error: ${err.message}`)
+    }
 
-    const user = await User.findOne({
-      email: email,
-    })
+    const userData = await authService.login({ email, password })
 
-    if (!user) throw ApiError.internal("User doesn't exist")
+    if (!userData) throw ApiError.badRequest(`Login error`)
 
-    const comparePassword = bcrypt.compareSync(password, user.password)
-    if (!comparePassword) throw ApiError.internal('Incorrect password')
+    // храним refreshToken в куках
+    setCookie(res, userData.refreshToken)
 
-    const token = generateJwt({ id: user._id.toString(), email: user.email, role: user.role })
-    return res.json({ token })
+    return res.json(userData)
   }
-  async check(req: Request, res: Response) {
-    res.json({ token: generateJwt({ id: req.user.id, email: req.user.email, role: req.user.role }) })
+
+  static async logout(req: Request, res: Response) {
+    const { refreshToken } = req.cookies
+
+    if (!refreshToken) throw ApiError.unauthorizedError()
+
+    const token = await authService.logout(refreshToken)
+    res.clearCookie('refreshToken')
+
+    if (token === 1) {
+      return res.json({ message: 'Logout successfully' })
+    } else {
+      return res.json({ message: 'Something goes wrong...' })
+    }
   }
-  async changeRole(req: Request, res: Response) {
+
+  static async refresh(req: Request, res: Response) {
+    const { refreshToken } = req.cookies
+
+    if (!refreshToken) throw ApiError.unauthorizedError()
+
+    const userData = await authService.refresh(refreshToken)
+
+    if (!userData) throw ApiError.badRequest(`Refresh error`)
+
+    // храним refreshToken в куках
+    setCookie(res, userData.refreshToken)
+
+    return res.json(userData)
+  }
+
+  static async changeRole(req: Request, res: Response) {
     const { id, role } = req.query
 
     if (!id || !role) throw ApiError.badRequest('Error: type the id and role')
 
-    const user = await User.findByIdAndUpdate(id, { role }, { new: true })
+    const user = await UserModel.findByIdAndUpdate(id, { role }, { new: true })
 
     res.status(200).send(user)
   }

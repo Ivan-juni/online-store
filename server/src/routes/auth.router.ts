@@ -9,11 +9,13 @@ export default function createAuthRoutes() {
 
   router.post('/registration', asyncHandler(authController.registration))
   router.post('/login', asyncHandler(authController.login))
-  router.get('/', authMiddleware, asyncHandler(authController.check))
+  router.post('/logout', authMiddleware, asyncHandler(authController.logout))
+  router.get('/refresh', asyncHandler(authController.refresh))
+  router.get('/activate/:link', asyncHandler(authController.activate))
 
   // @route DELETE /api/auth/changeRole?id=u34ut043cf&role=ADMIN
   // @des Change user role
-  router.put('/changeRole', checkRole('ADMIN'), asyncHandler(authController.changeRole))
+  router.put('/changeRole', checkRole('OWNER'), asyncHandler(authController.changeRole))
 
   return router
 }

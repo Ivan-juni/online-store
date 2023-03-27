@@ -1,4 +1,4 @@
-export default function generateKey(length: number = 20) {
+export default function generateKey(length = 20) {
   let result = ''
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const charactersLength = characters.length
