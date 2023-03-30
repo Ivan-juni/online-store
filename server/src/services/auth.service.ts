@@ -6,8 +6,8 @@ import bcrypt from 'bcrypt'
 import { v4 } from 'uuid'
 import { User } from '../db/interfaces/user.interface'
 import mailService from './mail.service'
-import { IRegistration } from '../controllers/models/registration.interface'
-import { ILogin } from '../controllers/models/login.interface'
+import { IRegistration } from '../controllers/models/auth.interface'
+import { ILogin } from '../controllers/models/auth.interface'
 import generateUserInfo from './utils/generate-user-info.util'
 
 export default class AuthService {

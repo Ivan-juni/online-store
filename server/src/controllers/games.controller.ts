@@ -1,62 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
 import ApiError from '../errors/ApiError'
 import removePhoto from '../utils/remove-photo.util'
-import GameModel from '../db/models/game.model'
 import { Game } from '../db/interfaces/game.interface'
 import { addGameSchema } from './models/yup.schemas'
 import { IUpdateGame } from './models/update-game.interface'
+import gamesService from '../services/games.service'
 
 export default class GamesController {
   static async getGames(req: Request, res: Response) {
-    const { id, name, categoryName, price = '0-10000', limit: limitParam = '5', page: pageParam = '1' } = req.query
-
-    const limit: number = +limitParam
-    const page: number = +pageParam
-    const offset = (page - 1) * limit
-
-    const priceRange: number[] = price
-      .toString()
-      .split('-')
-      .map((range) => +range)
-    const findByPrice = { $gte: priceRange[0], $lte: priceRange[1] }
-
-    let games: Game[] = []
-
-    switch (true) {
-      case !!id && !categoryName && !name && !price:
-        games = await GameModel.find({ _id: id }).limit(limit).skip(offset)
-        break
-      case !id && !categoryName && !name && !price:
-        games = await GameModel.find().limit(limit).skip(offset)
-        break
-      case !id && categoryName && !name:
-        games = await GameModel.find({
-          categoryName: { $in: categoryName },
-          price: findByPrice,
-        })
-          .limit(limit)
-          .skip(offset)
-        break
-      case !id && !categoryName && !!name:
-        games = await GameModel.find({
-          name: { $regex: name, $options: 'i' },
-          price: findByPrice,
-        })
-          .limit(limit)
-          .skip(offset)
-        break
-      case !id && !categoryName && !name && !!price:
-        games = await GameModel.find({
-          price: findByPrice,
-        })
-          .limit(limit)
-          .skip(offset)
-        break
-      default:
-        return res.status(400).json({
-          message: "You can't find by this params",
-        })
-    }
+    const games: Game[] = await gamesService.get(req.query)
 
     return res.status(200).json(games)
   }
@@ -66,12 +18,7 @@ export default class GamesController {
 
     if (!id) throw ApiError.badRequest('Please, enter id')
 
-    const game: Game = await GameModel.findOne(
-      {
-        _id: id,
-      },
-      { gameInfo: 1 }
-    )
+    const game: Game = await gamesService.getInfo(id)
 
     return res.status(200).json(game)
   }
@@ -80,16 +27,7 @@ export default class GamesController {
     try {
       await addGameSchema.validate(req.body, { abortEarly: false })
 
-      const { name, price, categoryName, gameInfo, isAvailable } = req.body
-
-      const game: Game = await GameModel.create({
-        name,
-        price: Number(price),
-        image: `http://localhost:${process.env.PORT}/static/${req.file.filename}`,
-        categoryName,
-        gameInfo: JSON.parse(gameInfo),
-        isAvailable: isAvailable === 'true',
-      })
+      const game: Game = await gamesService.add(req.body, req.file.filename)
 
       return res.status(201).json(game)
     } catch (error) {
@@ -103,10 +41,8 @@ export default class GamesController {
     }
   }
 
-  static async deleteGame(req: Request, res: Response) {
-    const game: Game = await GameModel.findOneAndDelete({
-      _id: req.params.id,
-    })
+  static async removeGame(req: Request, res: Response) {
+    const game: Game = await gamesService.remove(req.params.id)
 
     await removePhoto(game.image)
 
@@ -139,10 +75,7 @@ export default class GamesController {
     }
 
     try {
-      const [oldGame, game] = await Promise.all([
-        GameModel.findById(id),
-        GameModel.findOneAndUpdate({ _id: id }, { $set: changingValues }, { returnDocument: 'after' }),
-      ])
+      const [oldGame, game] = await gamesService.update(id, changingValues)
 
       if (!oldGame) throw ApiError.badRequest('This game does not exist')
 

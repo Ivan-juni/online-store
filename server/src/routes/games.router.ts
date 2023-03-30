@@ -38,7 +38,7 @@ export default function createGameRoutes() {
 
   // @route DELETE /api/games/:id
   // @des Delete a game
-  router.delete('/:id', asyncHandler(GamesController.deleteGame))
+  router.delete('/:id', asyncHandler(GamesController.removeGame))
 
   router.use(upload.single('image'))
   // @route POST /api/games/

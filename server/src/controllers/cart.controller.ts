@@ -2,26 +2,18 @@ import { Request, Response } from 'express'
 import { Cart } from '../db/interfaces/cart.interface'
 import { Game } from '../db/interfaces/game.interface'
 import { Order } from '../db/interfaces/order.interface'
-import CartModel from '../db/models/cart.model'
-import GameModel from '../db/models/game.model'
-import OrderModel from '../db/models/order.model'
 import ApiError from '../errors/ApiError'
+import cartService from '../services/cart.service'
+import gamesService from '../services/games.service'
 import generateKey from '../utils/generate-access-key.util'
 
 export default class CartController {
   static async getCart(req: Request, res: Response) {
-    const { id } = req.user
-    const cart: Cart = await CartModel.findOne({
-      userId: id,
-    })
-    if (!cart) throw ApiError.internal("Can't find a cart")
-
-    const cartGames: Game[] = await GameModel.find({
-      _id: { $in: cart.gameId },
-    })
+    const cartGames: Game[] = await cartService.get(req.user.id)
 
     return res.status(200).json(cartGames)
   }
+
   static async addGame(req: Request, res: Response) {
     const { id } = req.user
     const { gameId } = req.params
@@ -29,20 +21,7 @@ export default class CartController {
     if (!id) throw ApiError.badRequest("User doesn't authorized")
     if (!gameId) throw ApiError.badRequest('Please, enter game id')
 
-    const cart: Cart = await CartModel.findOneAndUpdate(
-      {
-        userId: id,
-      },
-      {
-        $push: { gameId: gameId },
-      },
-      { new: true } // return the updated document
-    )
-    if (!cart) throw ApiError.internal("Can't find a cart")
-
-    const cartGames: Game[] = await GameModel.find({
-      _id: { $in: cart.gameId },
-    })
+    const cartGames: Game[] = await cartService.addGame(id, gameId)
 
     return res.status(200).json(cartGames)
   }
@@ -57,26 +36,17 @@ export default class CartController {
       accessKey: string
     }> = []
 
-    const cart: Cart = await CartModel.findOne({
-      userId: id,
-    })
+    const cart: Cart = await cartService.find(id)
 
     if (!cart) throw ApiError.badRequest("Can't find a cart")
     if (cart.gameId.length == 0) throw ApiError.badRequest('Your cart is empty')
 
-    const order: Order = await OrderModel.create({
-      user: {
-        id: id,
-        email: email,
-      },
-      games: cart.gameId,
-    })
+    const order: Order = await cartService.order(id, email, cart.gameId)
 
     for (let i = 0; i < order.games.length; i++) {
       const gameId = order.games[i]
 
-      const game: Game = await GameModel.findById(gameId)
-
+      const game: Game = await gamesService.find(gameId)
       const key = generateKey()
 
       result.push({
@@ -87,27 +57,18 @@ export default class CartController {
 
     return res.status(200).send({ message: 'Ordered successfully', games: result })
   }
+
   static async removeGame(req: Request, res: Response) {
     const { id } = req.user
     const { gameId } = req.params
 
-    const cart: Cart = await CartModel.findOneAndUpdate(
-      {
-        userId: id,
-      },
-      {
-        $pull: { gameId: gameId },
-      },
-      { new: true } // return the updated document
-    )
-    const cartGames: Game[] = await GameModel.find({
-      _id: { $in: cart.gameId },
-    })
+    const cartGames: Game[] = await cartService.removeGame(id, gameId)
 
     return res.status(200).json(cartGames)
   }
+
   static async getOrders(req: Request, res: Response) {
-    const orders: Order[] = await OrderModel.find()
+    const orders: Order[] = await cartService.getOrders()
 
     if (!orders) throw ApiError.internal("Can't find an orders")
 
